@@ -15,8 +15,9 @@ Pages.deck = function(params){
     var groups = {}, order = [];
     cards.forEach(function(c){
       var key;
-      if(deck.type==='kana')  key = (c.group||'other')+'|'+(c.row||'');
-      else if(deck.type==='vocab') key = c.cat||'Other';
+      if(deck.type==='kana')        key = (c.group||'other')+'|'+(c.row||'');
+      else if(deck.type==='vocab')  key = c.cat||'Other';
+      else if(deck.type==='kanji') key = c.cat||'Other';
       else key = deck.name;
       if(!groups[key]){ groups[key]=[]; order.push(key); }
       groups[key].push(c);

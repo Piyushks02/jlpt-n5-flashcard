@@ -92,7 +92,6 @@ var App = (function(){
     var pct = fi.deckPct !== undefined ? Math.round(fi.deckPct*100) : 0;
     return '<a class="exit-link" href="#/deck/'+(fi.deckId||'')+'">‹ Exit</a>'+
       '<span class="focus-info">'+(fi.deckName||'')+'</span>'+
-      '<span class="focus-info text-muted">'+( fi.direction||'')+'</span>'+
       '<span class="focus-info text-muted" id="focus-counter">'+(fi.current||0)+'/'+(fi.total||0)+'</span>'+
       '<span class="spacer"></span>'+
       '<div class="focus-progress-bar"><div class="focus-progress-fill" style="width:'+pct+'%"></div></div>'+

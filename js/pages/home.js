@@ -57,6 +57,10 @@ Pages.home = function(){
     '</div>'+
     '<div class="deck-list">'+decks.map(deckRow).join('')+'</div>'+
     '<div class="mt-lg"><a href="#/calendar" class="text-muted text-sm">📅 View practice calendar →</a></div>'+
+    '<footer class="home-footer">'+
+      'Made with Claude &nbsp;·&nbsp; '+
+      '<a href="https://github.com/Piyushks02/jlpt-n5-flashcard" target="_blank" rel="noopener">GitHub</a>'+
+    '</footer>'+
   '</div>';
 
   App.setContent(html);

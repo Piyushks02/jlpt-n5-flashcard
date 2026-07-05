@@ -283,7 +283,7 @@ body {
 .navbar-focus .spacer { flex: 1; }
 
 /* ===== LAYOUT ===== */
-.page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem .25rem; }
 .page-wide { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
 /* ===== PROGRESS BAR ===== */
@@ -417,10 +417,40 @@ body {
 
 /* ===== PRACTICE PAGE ===== */
 .practice-layout { display: flex; flex-direction: column; align-items: center; padding: 1rem 1rem 2rem; min-height: calc(100vh - 48px); }
-.practice-controls-top { width: 100%; max-width: 680px; display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; align-items: center; justify-content: center; }
+
+/* Flip card outer — arrows flank the card */
+.flip-card-outer {
+  display: flex; align-items: center; gap: .5rem;
+  width: 100%; max-width: 580px;
+  margin: .5rem 0 .25rem;
+}
+.side-nav-btn {
+  flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+  transition: background .15s, color .15s, transform .1s, box-shadow .15s;
+}
+.side-nav-btn:hover {
+  background: var(--bg2); color: var(--text);
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.side-nav-btn:active { transform: scale(.95); }
+.flip-card-outer .flip-card-wrapper { flex: 1; margin: 0; max-width: none; }
+
+/* Counter overlaid at bottom of card */
+.card-counter-inner {
+  position: absolute; bottom: .6rem; left: 50%;
+  transform: translateX(-50%);
+  font-size: .72rem; color: var(--text2);
+  pointer-events: none; z-index: 2;
+}
 
 /* Flip card */
-.flip-card-wrapper { width: 100%; max-width: 500px; height: 260px; perspective: 1000px; margin: .5rem 0 1rem; cursor: pointer; }
+.flip-card-wrapper { width: 100%; max-width: 500px; height: 260px; perspective: 1000px; margin: .5rem 0 1rem; cursor: pointer; position: relative; }
 .flip-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .35s; }
 .flip-card-wrapper.flipped .flip-card-inner { transform: rotateY(180deg); }
 .flip-card-face {
@@ -437,7 +467,7 @@ body {
 .card-face-answer { font-size: 1.5rem; font-weight: 600; }
 .card-face-reading{ font-size: 1rem; color: var(--text2); }
 .card-face-example{ font-size: .82rem; color: var(--text2); font-style: italic; text-align: center; max-width: 360px; }
-.flip-hint { font-size: .75rem; color: var(--text2); text-align: center; }
+.flip-hint { font-size: .75rem; color: var(--text2); text-align: center; margin-bottom: .75rem; }
 
 /* nav buttons */
 .practice-nav { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
@@ -451,7 +481,7 @@ body {
 .practice-nav .card-counter { color: var(--text2); font-size: .9rem; min-width: 60px; text-align: center; }
 
 /* Mastery buttons */
-.mastery-buttons { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+.mastery-buttons { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-top: 1.1rem; margin-bottom: 1.25rem; }
 .mastery-btn {
   padding: .45rem .9rem; border-radius: 8px; font-size: .88rem; font-weight: 600;
   border: 2px solid transparent; transition: opacity .15s, transform .1s;
@@ -511,14 +541,49 @@ body {
 .btn-group > button.active,
 .btn-group > button.on { z-index: 1; }
 
-/* Category filter row (2nd row, horizontally scrollable) */
-.practice-controls-cats {
-  width: 100%; max-width: 680px;
-  overflow-x: auto; padding-bottom: .25rem;
+/* Controls block — same width as flashcard so left edges align */
+.practice-controls-block {
+  width: 100%; max-width: 580px; /* match flip-card-outer */
+  padding-left: calc(44px + .5rem); /* align labels with card left edge */
+  display: flex; flex-direction: column; gap: .4rem;
   margin-bottom: .5rem;
-  display: flex; justify-content: center;
 }
-.cat-btn-group { white-space: nowrap; }
+.practice-controls-row {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+}
+.controls-label {
+  min-width: 8.5rem; flex-shrink: 0;
+  font-size: .7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text2); white-space: nowrap;
+}
+
+/* Kana category row: label + All on first line, grouped panel indented below */
+.cat-with-all-row { flex-direction: column !important; align-items: flex-start !important; }
+.cat-all-line { display: flex; align-items: center; gap: .6rem; }
+
+/* Kana grouped category panel */
+.kana-cat-panel { display: flex; flex-direction: column; gap: .5rem; }
+.cat-group-section { display: flex; align-items: flex-start; gap: .4rem; }
+.cat-group-chips { display: flex; flex-wrap: wrap; gap: .3rem; flex: 1; }
+.cat-group-label {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--text2); white-space: nowrap;
+  padding-top: .25rem; flex-shrink: 0;
+}
+.chip-sm { padding: .18rem .5rem !important; font-size: .72rem !important; }
+
+/* Chip / pill group — wraps freely, no shared edges */
+.chip-group { display: flex; flex-wrap: wrap; gap: .35rem; }
+.chip {
+  padding: .25rem .65rem; border-radius: 999px;
+  font-size: .78rem; font-weight: 500;
+  background: var(--bg2); color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer; transition: background .12s, border-color .12s, color .12s;
+  white-space: nowrap;
+}
+.chip:hover { background: var(--border); }
+.chip.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 
 /* Empty state */
 .empty-state { text-align: center; color: var(--text2); padding: 2rem; font-size: .95rem; }
@@ -601,6 +666,17 @@ body {
 .app-toast-visible { transform: translateX(-50%) translateY(0); }
 .app-toast-success { background: #2E7D32; color: #fff; }
 .app-toast-error   { background: #C0392B; color: #fff; }
+
+/* ===== HOME FOOTER ===== */
+.home-footer {
+  margin-top: 1.5rem; padding: .3rem 0 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: .7rem; color: var(--text2);
+  letter-spacing: .02em;
+}
+.home-footer a { color: var(--text2); text-decoration: underline; text-underline-offset: 2px; }
+.home-footer a:hover { color: var(--text); }
 
 /* ===== UTILITIES ===== */
 .flex { display: flex; }
