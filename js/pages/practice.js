@@ -7,18 +7,21 @@ Pages.practice = function(params){
   var deckDir = (prefs.directions||{})[deck.id] || 'normal';
 
   // ===== State =====
-  var direction  = deckDir;   // 'normal' | 'reverse'
+  var direction  = deckDir;
   var shuffle    = !!prefs.shuffle;
-  var masteryAllMode = true;  // when true, all levels shown; "All" button is active
-  var masteryFilter  = [];    // active individual levels when masteryAllMode=false
-  var catAllMode = true;  // when true, all categories shown
-  var catFilter  = [];    // active individual categories when catAllMode=false
+  var masteryAllMode = true;
+  var masteryFilter  = [];
+  var catAllMode = true;
+  var catFilter  = [];
   var allCategories = _getCategories(deck);
-  var queue      = [];
-  var qIdx       = 0;
-  var isFlipped  = false;
-  var pendingLevel = null;  // level to commit on next-card
-  var currentLevel = null;
+  var queue        = [];       // filtered cards (total count reference)
+  var recyclePool  = [];       // cards left in the current pass
+  var shownHistory = [];       // last ≤10 card objects (for ← navigation)
+  var histIdx      = -1;       // position within shownHistory
+  var isRecycling  = false;    // true once all cards have been seen once
+  var passCount    = 0;        // cards seen so far in the current pass
+  var isFlipped    = false;
+  var pendingLevel = null;
 
   // ===== Build queue =====
   function _getCategories(deck){
@@ -57,6 +60,12 @@ Pages.practice = function(params){
     return order.map(function(g){ return {key:g, label:labels[g], rows:map[g]}; });
   }
 
+  function _shuffled(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; }
+    return a;
+  }
+
   function buildQueue(){
     var cards = deck.cards.filter(function(c){
       var lv = Store.getLevel(c.id);
@@ -67,17 +76,26 @@ Pages.practice = function(params){
       }
       return true;
     });
-    if(shuffle){
-      for(var i=cards.length-1;i>0;i--){
-        var j=Math.floor(Math.random()*(i+1));
-        var tmp=cards[i];cards[i]=cards[j];cards[j]=tmp;
-      }
+    queue       = cards;
+    recyclePool = shuffle ? _shuffled(cards) : cards.slice();
+    shownHistory = [];
+    histIdx      = -1;
+    isRecycling  = false;
+    passCount    = 0;
+    // pre-load first card into history
+    if(recyclePool.length > 0){
+      shownHistory.push(recyclePool.shift());
+      histIdx   = 0;
+      passCount = 1;
     }
-    queue = cards;
-    qIdx  = 0;
   }
 
-  function currentCard(){ return queue[qIdx]||null; }
+  function _refillPool(){
+    isRecycling = true;
+    recyclePool = shuffle ? _shuffled(queue) : queue.slice();
+  }
+
+  function currentCard(){ return histIdx >= 0 ? shownHistory[histIdx] : null; }
 
   // ===== Card face helpers =====
   function getFront(card){
@@ -125,7 +143,7 @@ Pages.practice = function(params){
     App.setFocusInfo({
       deckId: deck.id, deckName: deck.name,
       direction: direction==='normal'?'JP→EN':'EN→JP',
-      current: qIdx+1, total: queue.length,
+      current: isRecycling ? queue.length : passCount, total: queue.length,
       deckPct: Store.deckProgress(deck.cards),
     });
 
@@ -214,7 +232,7 @@ Pages.practice = function(params){
                 (back.extra?'<div class="card-face-example">'+escHtml(back.extra)+'</div>':'')+
               '</div>'+
             '</div>'+
-            '<div class="card-counter-inner">'+(qIdx+1)+' / '+queue.length+'</div>'+
+            '<div class="card-counter-inner">'+(isRecycling ? queue.length : passCount)+' / '+queue.length+(isRecycling ? ' ↺' : '')+'</div>'+
           '</div>'+
           '<button class="nav-btn side-nav-btn" id="next-btn" title="Next card  (→ Arrow · Enter)">'+
             '<svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">'+
@@ -451,8 +469,27 @@ Pages.practice = function(params){
     }
     pendingLevel = null;
     isFlipped = false;
-    qIdx = Math.max(0, Math.min(queue.length-1, qIdx+dir));
     document.onkeydown = null;
+
+    if(dir === 1){
+      if(histIdx < shownHistory.length - 1){
+        // move forward within history (revisiting)
+        histIdx++;
+      } else {
+        // need a new card — refill pool if exhausted
+        if(recyclePool.length === 0) _refillPool();
+        if(queue.length > 0){
+          var next = recyclePool.shift();
+          shownHistory.push(next);
+          if(shownHistory.length > 10) shownHistory.shift(); // cap history at 10
+          histIdx = shownHistory.length - 1;
+          if(!isRecycling) passCount = Math.min(passCount + 1, queue.length);
+        }
+      }
+    } else {
+      if(histIdx > 0) histIdx--;
+    }
+
     render();
   }
 
