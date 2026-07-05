@@ -64,7 +64,8 @@ Then open `index.html` in your browser. No build step, no dependencies.
 | `3` | Mark as Familiar |
 | `4` | Mark as Mastered |
 | Any letter | Focus answer box |
-| `Enter` | Submit answer (then releases focus) |
+| `Enter` *(in answer box)* | Submit answer, then releases focus |
+| `Enter` *(outside answer box)* | Next card |
 | `Esc` | Exit answer box |
 
 ---

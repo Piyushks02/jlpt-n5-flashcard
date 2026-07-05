@@ -196,7 +196,7 @@ Pages.practice = function(params){
 
       cardBlock =
         '<div class="flip-card-outer">'+
-          '<button class="nav-btn side-nav-btn" id="prev-btn">'+
+          '<button class="nav-btn side-nav-btn" id="prev-btn" title="Previous card  (← Arrow)">'+
             '<svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">'+
               '<path d="M8 2L2 8L8 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'+
             '</svg>'+
@@ -216,7 +216,7 @@ Pages.practice = function(params){
             '</div>'+
             '<div class="card-counter-inner">'+(qIdx+1)+' / '+queue.length+'</div>'+
           '</div>'+
-          '<button class="nav-btn side-nav-btn" id="next-btn">'+
+          '<button class="nav-btn side-nav-btn" id="next-btn" title="Next card  (→ Arrow · Enter)">'+
             '<svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">'+
               '<path d="M2 2L8 8L2 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'+
             '</svg>'+
@@ -410,6 +410,7 @@ Pages.practice = function(params){
       // Global shortcuts (always active when outside textbox)
       if(e.key==='ArrowLeft')  { _go(-1,card); return; }
       if(e.key==='ArrowRight') { _go(1,card);  return; }
+      if(e.key==='Enter')      { e.preventDefault(); _go(1,card); return; }
       if(e.key===' ')          { e.preventDefault(); _flip(card); return; }
 
       // 1–4 → mastery shortcuts (numbers never redirect to textbox)
