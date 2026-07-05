@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-preset="ai-shu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JLPT N5 Flashcards</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="navbar" class="navbar"></div>
+  <div id="mobile-menu-slot"></div>
+  <div id="main"></div>
+
+  <!-- Data files -->
+  <script src="data/hiragana.js"></script>
+  <script src="data/katakana.js"></script>
+  <script src="data/kanji.js"></script>
+  <script src="data/vocab.js"></script>
+  <script src="data/grammar.js"></script>
+
+  <!-- Core -->
+  <script src="js/storage.js"></script>
+  <script src="js/router.js"></script>
+
+  <!-- Pages namespace -->
+  <script>var Pages = {};</script>
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/deck.js"></script>
+  <script src="js/pages/practice.js"></script>
+  <script src="js/pages/calendar.js"></script>
+  <script src="js/pages/settings.js"></script>
+
+  <!-- App (must come after pages) -->
+  <script src="js/app.js"></script>
+
+  <script>App.init();</script>
+</body>
+</html>
