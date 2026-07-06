@@ -406,7 +406,7 @@ var App = (function(){
     initBeforeUnload();
     initTimeTracker();
     // Remind user of unsaved progress after reload
-    if(Store.hasUnsaved()){
+    if(Store.hasUnsaved() && !Store.getPrefs().suppressCloseWarning){
       setTimeout(function(){
         showToast('Unsaved progress — click the ⚠ icon in the top right to save<br><span style="font-size:.8em;opacity:.85">To disable this alert, go to Settings</span>', 'warn');
       }, 1200);
