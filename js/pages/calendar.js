@@ -14,7 +14,8 @@ Pages.calendar = function(){
     for(var i=181; i>=0; i--){
       var d = new Date(today);
       d.setDate(d.getDate()-i);
-      var key = d.toISOString().slice(0,10);
+      // Use local date string to match keys stored by getLogicalDay()
+      var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       var entry = history[key];
       cells.push({key:key, entry:entry, dow: d.getDay(), date:d});
     }
@@ -66,7 +67,7 @@ Pages.calendar = function(){
 
   // Render heatmap
   var dayAbbr = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var dayLabelsHtml = '<div class="heatmap-day-labels">';
+  var dayLabelsHtml = '<div class="heatmap-day-labels" style="margin-top:calc(18px + .3rem)">';
   for(var d=0;d<7;d++) dayLabelsHtml += '<div style="height:13px;line-height:13px">'+dayAbbr[d].slice(0,1)+'</div>';
   dayLabelsHtml += '</div>';
 

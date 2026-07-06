@@ -52,13 +52,19 @@ var Store = (function(){
   }
 
   // --- logical day boundary ---
+  function _localDateStr(d){
+    // Format as YYYY-MM-DD in LOCAL time (not UTC) so day boundaries match the user's clock
+    return d.getFullYear()+'-'+
+      String(d.getMonth()+1).padStart(2,'0')+'-'+
+      String(d.getDate()).padStart(2,'0');
+  }
   function getLogicalDay(date){
     var p = getPrefs();
     var d = date ? new Date(date) : new Date();
     var boundary = new Date(d);
     boundary.setHours(p.resetHour, p.resetMinute, 0, 0);
     if(d < boundary) d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0,10);
+    return _localDateStr(d); // local date, not UTC
   }
 
   // --- session ---
