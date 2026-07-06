@@ -600,10 +600,16 @@ body {
 @media (max-width: 600px) {
   .practice-controls-block { padding-left: 0; }
   .controls-label { min-width: 6rem; }
+  .flip-hint { display: none; }
+  .answer-check { margin-top: 1.5rem; }           /* type mode: gap below card */
+  .practice-divider--answer { margin-top: 1.5rem; } /* mcq mode: gap below card */
 }
 .practice-controls-row {
   display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
 }
+/* Settings toggle button group — wraps independently from the label */
+.settings-controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+
 .controls-label {
   min-width: 8.5rem; flex-shrink: 0;
   font-size: .7rem; font-weight: 600; text-transform: uppercase;

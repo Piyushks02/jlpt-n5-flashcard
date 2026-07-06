@@ -252,7 +252,7 @@ Pages.practice = function(params){
       if(quizMode==='mcq' && mcqData){
         var mcqLetters = ['A','B','C','D','E','F'];
         ansSection =
-          '<div class="practice-divider">Choose answer</div>'+
+          '<div class="practice-divider practice-divider--answer">Choose answer</div>'+
           '<div class="mcq-grid">'+
             mcqData.options.map(function(opt, i){
               return '<button class="mcq-btn" data-mcq-idx="'+i+'" title="Shortcut: '+mcqLetters[i]+'">'+
@@ -265,7 +265,7 @@ Pages.practice = function(params){
       } else if(quizMode==='mcq' && !mcqData){
         // MCQ disabled for this deck/direction (grammar or reverse)
         var disMsg = direction==='reverse' ? 'Switch to JP → EN for MCQ' : 'No MCQ for grammar';
-        ansSection = '<div class="practice-divider">Choose answer</div>'+
+        ansSection = '<div class="practice-divider practice-divider--answer">Choose answer</div>'+
           '<div class="answer-check answer-check-disabled">'+
             '<input type="text" disabled placeholder="'+disMsg+'">'+
             '<button class="btn-secondary btn-sm" disabled>Check</button>'+
@@ -329,18 +329,20 @@ Pages.practice = function(params){
     var filterRows = selectionMode
       ? '<div class="practice-controls-row">'+
           '<span class="controls-label">Settings</span>'+
-          '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
-            ' title="Card direction — front side shown first">'+
-            (direction==='normal'?'JP → EN':'EN → JP')+
-          '</button>'+
-          '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
-            ' title="Randomise card order">⇄ Shuffle</button>'+
-          '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
-            ' title="MCQ: pick from 6 options · Type: write your answer">'+
-            (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
-          '</button>'+
-          '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
-            ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
+          '<div class="settings-controls">'+
+            '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
+              ' title="Card direction — front side shown first">'+
+              (direction==='normal'?'JP → EN':'EN → JP')+
+            '</button>'+
+            '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
+              ' title="Randomise card order">⇄ Shuffle</button>'+
+            '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+              ' title="MCQ: pick from 6 options · Type: write your answer">'+
+              (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
+            '</button>'+
+            '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
+              ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
+          '</div>'+
         '</div>'+
         '<div class="selection-notice">'+
           '⚑ Practising <strong>'+_selectionIds.length+'</strong> selected card'+(_selectionIds.length===1?'':'s')+
@@ -348,18 +350,20 @@ Pages.practice = function(params){
         '</div>'
       : '<div class="practice-controls-row">'+
           '<span class="controls-label">Settings</span>'+
-          '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
-            ' title="Card direction — front side shown first">'+
-            (direction==='normal'?'JP → EN':'EN → JP')+
-          '</button>'+
-          '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
-            ' title="Randomise card order">⇄ Shuffle</button>'+
-          '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
-            ' title="MCQ: pick from 6 options · Type: write your answer">'+
-            (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
-          '</button>'+
-          '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
-            ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
+          '<div class="settings-controls">'+
+            '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
+              ' title="Card direction — front side shown first">'+
+              (direction==='normal'?'JP → EN':'EN → JP')+
+            '</button>'+
+            '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
+              ' title="Randomise card order">⇄ Shuffle</button>'+
+            '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+              ' title="MCQ: pick from 6 options · Type: write your answer">'+
+              (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
+            '</button>'+
+            '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
+              ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
+          '</div>'+
         '</div>'+
         '<div class="practice-controls-row">'+
           '<span class="controls-label">Filter by level</span>'+
