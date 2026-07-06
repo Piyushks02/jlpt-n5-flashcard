@@ -588,10 +588,33 @@ body {
   margin-left: -1px;
   position: relative;
 }
-.btn-group > button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
-.btn-group > button:last-child  { border-radius: 0 6px 6px 0; }
+.btn-group > button:first-child { 
+  @media only screen and (min-width: 340px) {
+    border-radius: 6px 0 0 6px; margin-left: 0; 
+  }
+}
+.btn-group > button:last-child  { 
+    @media only screen and (min-width: 340px) {
+        border-radius: 0 6px 6px 0; 
+    }
+}
 .btn-group > button.active,
 .btn-group > button.on { z-index: 1; }
+
+.btn-group {
+  @media only screen and (max-width: 340px) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+}
+
+.btn-group > button {
+  @media only screen and (max-width: 340px) {
+    border-radius: 6px;
+  }
+}
 
 /* Controls block — same width as flashcard so left edges align */
 .practice-controls-block {
@@ -623,6 +646,12 @@ body {
 /* Kana category row: label + All on first line, grouped panel indented below */
 .cat-with-all-row { flex-direction: column !important; align-items: flex-start !important; }
 .cat-all-line { display: flex; align-items: center; gap: .6rem; }
+
+.cat-with-all-row {
+  @media only screen and (max-width: 340px) {
+    margin-top: 12px;
+  }
+}
 
 /* Kana grouped category panel */
 .kana-cat-panel { display: flex; flex-direction: column; gap: .5rem; }
