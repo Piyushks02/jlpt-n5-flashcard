@@ -509,6 +509,9 @@ body {
   width: 100%; max-width: 500px;
   display: grid; grid-template-columns: 1fr 1fr; gap: .4rem;
 }
+/* Kana reverse mode — larger characters so similar kana are easy to distinguish */
+.mcq-grid--kana .mcq-btn { font-size: 1.5rem; padding: .65rem .5rem; }
+.mcq-grid--kana .mcq-letter { font-size: .65rem; }
 .mcq-btn {
   display: flex; align-items: center; gap: .5rem;
   padding: .55rem .7rem; border-radius: 8px; text-align: left;

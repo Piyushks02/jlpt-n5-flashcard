@@ -143,9 +143,9 @@ Pages.practice = function(params){
     return {main:'',sub:'',extra:''};
   }
 
-  // Answer key for answer-check
+  // Answer key for type-mode check only — null disables the textbox
   function getAnswerKey(card){
-    if(direction==='reverse') return null; // disabled in reverse
+    if(direction==='reverse') return null; // type mode disabled in EN→JP (can't type Japanese easily)
     if(deck.type==='kana')    return card.romaji;
     if(deck.type==='kanji')   return card.meaning;
     if(deck.type==='vocab')   return card.en;
@@ -153,9 +153,14 @@ Pages.practice = function(params){
     return null;
   }
 
-  // Answer key for any card (used to generate MCQ distractors)
+  // Answer key for any card — used to generate MCQ distractors
   function _getCardAnswer(c){
-    if(direction==='reverse') return null;
+    if(direction==='reverse'){
+      if(deck.type==='kana')    return c.kana;
+      if(deck.type==='kanji')   return c.kanji;
+      if(deck.type==='vocab')   return c.jp;
+      return null;
+    }
     if(deck.type==='kana')    return c.romaji;
     if(deck.type==='kanji')   return c.meaning;
     if(deck.type==='vocab')   return c.en;
@@ -247,13 +252,17 @@ Pages.practice = function(params){
       var ansKey = getAnswerKey(card);
       var ansDisabled = ansKey === null;
 
-      // Build answer section based on quiz mode
+      // Build answer section — grammar has no answer check at all
       var ansSection;
-      if(quizMode==='mcq' && mcqData){
+      if(deck.type==='grammar'){
+        ansSection = ''; // grammar: no textbox, no MCQ
+      } else if(quizMode==='mcq' && mcqData){
         var mcqLetters = ['A','B','C','D','E','F'];
+        // Use larger kana buttons when options are single/double kana characters
+        var isKanaOpts = deck.type==='kana' && direction==='reverse';
         ansSection =
           '<div class="practice-divider practice-divider--answer">Choose answer</div>'+
-          '<div class="mcq-grid">'+
+          '<div class="mcq-grid'+(isKanaOpts?' mcq-grid--kana':'')+'">'+
             mcqData.options.map(function(opt, i){
               return '<button class="mcq-btn" data-mcq-idx="'+i+'" title="Shortcut: '+mcqLetters[i]+'">'+
                 '<span class="mcq-letter">'+mcqLetters[i]+'</span>'+
@@ -263,8 +272,8 @@ Pages.practice = function(params){
           '</div>'+
           '<div class="answer-result" id="answer-result"></div>';
       } else if(quizMode==='mcq' && !mcqData){
-        // MCQ disabled for this deck/direction (grammar or reverse)
-        var disMsg = direction==='reverse' ? 'Switch to JP → EN for MCQ' : 'No MCQ for grammar';
+        // MCQ disabled for grammar (both directions)
+        var disMsg = 'No MCQ for grammar';
         ansSection = '<div class="practice-divider practice-divider--answer">Choose answer</div>'+
           '<div class="answer-check answer-check-disabled">'+
             '<input type="text" disabled placeholder="'+disMsg+'">'+
@@ -273,7 +282,7 @@ Pages.practice = function(params){
       } else {
         // Text mode
         var ansPlaceholder = ansDisabled
-          ? (direction==='reverse' ? 'Switch to JP → EN to check answers' : 'No answer check for grammar')
+          ? (direction==='reverse' ? 'Type mode unavailable for EN → JP — use MCQ' : 'No answer check for grammar')
           : 'Type answer…';
         ansSection =
           '<div class="answer-check'+(ansDisabled?' answer-check-disabled':'')+'">' +
@@ -336,10 +345,12 @@ Pages.practice = function(params){
             '</button>'+
             '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
               ' title="Randomise card order">⇄ Shuffle</button>'+
-            '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
-              ' title="MCQ: pick from 6 options · Type: write your answer">'+
-              (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
-            '</button>'+
+            (deck.type!=='grammar'
+              ? '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+                  ' title="MCQ: pick from 6 options · Type: write your answer">'+
+                  (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
+                '</button>'
+              : '')+
             '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
               ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
           '</div>'+
@@ -357,10 +368,12 @@ Pages.practice = function(params){
             '</button>'+
             '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
               ' title="Randomise card order">⇄ Shuffle</button>'+
-            '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
-              ' title="MCQ: pick from 6 options · Type: write your answer">'+
-              (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
-            '</button>'+
+            (deck.type!=='grammar'
+              ? '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+                  ' title="MCQ: pick from 6 options · Type: write your answer">'+
+                  (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
+                '</button>'
+              : '')+
             '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
               ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
           '</div>'+
