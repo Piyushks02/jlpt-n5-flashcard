@@ -147,6 +147,18 @@ var App = (function(){
       var menu = document.getElementById('mobile-menu');
       if(menu) menu.classList.toggle('open');
     });
+    let mobileViewDeck = existing;
+    if(!mobileViewDeck){
+      mobileViewDeck = document.querySelector("#mobile-menu");
+      const deckButtons = mobileViewDeck.querySelectorAll("a");
+      if(deckButtons){
+        deckButtons.forEach((button)=>{
+          button.addEventListener("click", ()=>{
+            mobileViewDeck.classList.toggle('open');
+          })
+        })
+      }
+    }
   }
 
   function wireDecksDropdown(){
