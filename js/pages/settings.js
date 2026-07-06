@@ -97,6 +97,10 @@ Pages.settings = function(){
 
     '<div class="settings-section">'+
       '<h2>Save Location</h2>'+
+      '<p class="setting-desc" style="margin-bottom:.85rem;line-height:1.6">'+
+        'Progress is already auto-saved in your browser and survives browser restarts and updates.'+
+        '<br>A <strong>save file</strong> is useful if you clear browser data, switch devices, or want a portable backup.'+
+      '</p>'+
       '<div class="setting-row">'+
         '<div>'+
           '<div class="setting-label">Save directory</div>'+
@@ -104,6 +108,17 @@ Pages.settings = function(){
         '</div>'+
         '<div class="setting-control" id="dir-control">'+
           '<button class="btn-secondary btn-sm" id="choose-dir-btn">Choose directory</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="setting-row">'+
+        '<div>'+
+          '<div class="setting-label">Close warning</div>'+
+          '<div class="setting-desc">Show a browser alert when closing or reloading with unsaved progress</div>'+
+        '</div>'+
+        '<div class="setting-control">'+
+          '<button class="toggle-btn'+(prefs.suppressCloseWarning ? '' : ' on')+'" id="close-warning-toggle">'+
+            (prefs.suppressCloseWarning ? 'Off' : 'On')+
+          '</button>'+
         '</div>'+
       '</div>'+
     '</div>'+
@@ -233,6 +248,15 @@ Pages.settings = function(){
     });
   }
   App.getDir(function(handle){ wireDirRow(handle); });
+
+  // Close warning toggle
+  var cwBtn = document.getElementById('close-warning-toggle');
+  if(cwBtn) cwBtn.addEventListener('click', function(){
+    prefs.suppressCloseWarning = !prefs.suppressCloseWarning;
+    Store.setPref('suppressCloseWarning', prefs.suppressCloseWarning);
+    cwBtn.classList.toggle('on', !prefs.suppressCloseWarning);
+    cwBtn.textContent = prefs.suppressCloseWarning ? 'Off' : 'On';
+  });
 
   // Export / Import / Reset
   document.getElementById('export-btn').addEventListener('click', function(){ App.exportFile(); });

@@ -98,7 +98,18 @@ Pages.calendar = function(){
   // ===== Session summary =====
   var viewedIds  = Object.keys(session.viewed||{});
   var viewedCount = viewedIds.length;
-  var moves = (session.moves||[]).slice().reverse();
+  var rawMoves = session.moves||[];
+
+  // Compute net change per card (first-seen from → last-seen to), skip no-ops
+  var _firstFrom = {}, _latestTo = {};
+  rawMoves.forEach(function(mv){
+    if(!_firstFrom[mv.id]) _firstFrom[mv.id] = mv.from;
+    _latestTo[mv.id] = mv.to;
+  });
+  var netMoves = Object.keys(_latestTo)
+    .filter(function(id){ return _firstFrom[id] !== _latestTo[id]; })
+    .map(function(id){ return {id:id, from:_firstFrom[id], to:_latestTo[id]}; })
+    .reverse(); // most-recent card first (Object.keys preserves insertion order)
 
   // Viewed cards list
   var viewedHtml = viewedCount ? viewedIds.map(function(id){
@@ -111,8 +122,8 @@ Pages.calendar = function(){
     '</div>';
   }).join('') : '<div class="text-muted text-sm">No cards viewed yet this session.</div>';
 
-  // Level moves list
-  var movesHtml = moves.length ? moves.slice(0,20).map(function(mv){
+  // Level changes list (net per card)
+  var movesHtml = netMoves.length ? netMoves.slice(0,20).map(function(mv){
     var card = _findCard(mv.id);
     var label = card ? _cardLabel(card) : mv.id;
     return '<div class="move-item">'+
@@ -176,7 +187,7 @@ Pages.calendar = function(){
       '<div class="session-summary">'+
         '<div class="session-stat"><span>Time today</span><span class="session-stat-val" title="'+fmtHours(Store.getTodayHours())+'">'+Store.getTodayHours().toFixed(1)+' hrs</span></div>'+
         '<div class="session-stat"><span>Cards viewed</span><span class="session-stat-val">'+viewedCount+'</span></div>'+
-        '<div class="session-stat"><span>Level changes</span><span class="session-stat-val">'+moves.length+'</span></div>'+
+        '<div class="session-stat"><span>Level changes</span><span class="session-stat-val">'+netMoves.length+'</span></div>'+
         '<h3 class="mt-sm">Cards viewed</h3>'+
         '<div class="moves-list">'+viewedHtml+'</div>'+
         '<h3 class="mt-sm">Level changes</h3>'+

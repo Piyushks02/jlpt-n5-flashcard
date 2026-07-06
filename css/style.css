@@ -731,15 +731,16 @@ body {
   position: fixed; bottom: 1.5rem; left: 50%;
   transform: translateX(-50%) translateY(150%);
   padding: .65rem 1.3rem; border-radius: 10px;
-  font-size: .88rem; font-weight: 600; line-height: 1.4;
+  font-size: .88rem; font-weight: 600; line-height: 1.5;
   box-shadow: 0 4px 16px rgba(0,0,0,.22);
   z-index: 600; pointer-events: none;
-  white-space: nowrap; max-width: 90vw; text-align: center;
+  max-width: 90vw; text-align: center;
   transition: transform .3s cubic-bezier(.4,0,.2,1);
 }
 .app-toast-visible { transform: translateX(-50%) translateY(0); }
 .app-toast-success { background: #2E7D32; color: #fff; }
 .app-toast-error   { background: #C0392B; color: #fff; }
+.app-toast-warn    { background: #B45309; color: #fff; }
 
 /* ===== HOME FOOTER ===== */
 .home-footer {

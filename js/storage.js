@@ -26,7 +26,7 @@ var Store = (function(){
     var m = getMastery();
     m[cardId] = level;
     save(KEYS.mastery, m);
-    _unsaved = true;
+    _markUnsaved();
     _emitChange();
   }
   function getLevel(cardId){ return getMastery()[cardId] || 'unknown'; }
@@ -87,7 +87,7 @@ var Store = (function(){
     save(KEYS.session, s);
     // update daily history
     _recordHistory(s.day, pts);
-    _unsaved = true;
+    _markUnsaved();
     _emitChange();
   }
   function resetSession(){
@@ -168,9 +168,11 @@ var Store = (function(){
   }
 
   // --- export / import ---
-  var _unsaved = false;
+  // Persist unsaved flag across reloads
+  var _unsaved = !!localStorage.getItem('n5_unsaved');
+  function _markUnsaved(){ _unsaved = true; try{ localStorage.setItem('n5_unsaved','1'); }catch(e){} }
   function hasUnsaved(){ return _unsaved; }
-  function markSaved(){ _unsaved = false; _emitChange(); }
+  function markSaved(){ _unsaved = false; localStorage.removeItem('n5_unsaved'); _emitChange(); }
 
   function exportData(){
     return {
@@ -191,7 +193,7 @@ var Store = (function(){
     save(KEYS.history, _history);
     save(KEYS.prefs,   _prefs);
     save(KEYS.timelog, _timelog);
-    _unsaved = false;
+    markSaved();
     _session = null; // let it re-init from today
     _emitChange();
   }

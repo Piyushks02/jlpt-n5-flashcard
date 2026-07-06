@@ -245,12 +245,12 @@ var App = (function(){
     var toast = document.createElement('div');
     toast.id = 'app-toast';
     toast.className = 'app-toast app-toast-' + (type||'success');
-    toast.textContent = msg;
+    toast.innerHTML = msg;
     document.body.appendChild(toast);
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ toast.classList.add('app-toast-visible'); });
     });
-    var duration = type === 'error' ? 6000 : 3000;
+    var duration = type === 'error' ? 6000 : type === 'warn' ? 9000 : 3000;
     setTimeout(function(){
       toast.classList.remove('app-toast-visible');
       setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 350);
@@ -265,7 +265,7 @@ var App = (function(){
       }
       Store.markSaved();
       updateSaveIndicator();
-      showToast('Saved successfully to ' + dirHandle.name + '/' + SAVE_FILENAME, 'success');
+      showToast('Progress saved to ' + dirHandle.name + '/' + SAVE_FILENAME, 'success');
     });
   }
 
@@ -306,7 +306,7 @@ var App = (function(){
       URL.revokeObjectURL(url);
       Store.markSaved();
       updateSaveIndicator();
-      showToast('Downloaded ' + SAVE_FILENAME + ' successfully', 'success');
+      showToast('Progress saved — ' + SAVE_FILENAME + ' downloaded', 'success');
     } catch(err){
       showToast('Failed to save file due to error: ' + err.message, 'error');
     }
@@ -379,9 +379,10 @@ var App = (function(){
   // ===== Unsaved-changes guard =====
   function initBeforeUnload(){
     window.addEventListener('beforeunload', function(e){
-      if(Store.hasUnsaved()){
+      if(Store.hasUnsaved() && !Store.getPrefs().suppressCloseWarning){
         e.preventDefault();
         e.returnValue = '';
+        showToast('Unsaved progress — click the ⚠ icon in the top right to save<br><span style="font-size:.8em;opacity:.85">To disable this alert, go to Settings</span>', 'warn');
       }
     });
   }
@@ -404,6 +405,12 @@ var App = (function(){
     renderNavbar();
     initBeforeUnload();
     initTimeTracker();
+    // Remind user of unsaved progress after reload
+    if(Store.hasUnsaved()){
+      setTimeout(function(){
+        showToast('Unsaved progress — click the ⚠ icon in the top right to save<br><span style="font-size:.8em;opacity:.85">To disable this alert, go to Settings</span>', 'warn');
+      }, 1200);
+    }
     Router.on('/', Pages.home);
     Router.on('/deck/:id', Pages.deck);
     Router.on('/practice/:id', Pages.practice);
