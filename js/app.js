@@ -65,7 +65,13 @@ var App = (function(){
     var deckLinks = DECKS.map(function(d){
       return '<a href="#/deck/'+d.id+'">'+d.icon+' '+d.name+'</a>';
     }).join('');
-    return '<a class="navbar-logo" href="#/">🇯🇵 N5</a>'+
+    return '<a class="navbar-logo" href="#/">'+
+      '<svg viewBox="0 0 3 2" width="22" height="15" aria-label="Japan flag" style="vertical-align:middle;border:1px solid rgba(0,0,0,.12);border-radius:2px;margin-right:5px">'+
+        '<rect width="3" height="2" fill="#fff"/>'+
+        '<circle cx="1.5" cy="1" r="0.6" fill="#BC002D"/>'+
+      '</svg>'+
+      '<span style="font-size:.9em">N5</span>'+
+    '</a>'+
       '<nav class="navbar-links">'+
         '<a href="#/"'+active('/')+'">Home</a>'+
         '<div class="dropdown" id="decks-dropdown">'+

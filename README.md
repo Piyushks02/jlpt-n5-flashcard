@@ -8,21 +8,48 @@ A complete, offline-first flashcard web app for studying everything required for
 
 ## Features
 
-- **5 decks** — Hiragana, Katakana, Kanji, Vocabulary, Grammar
-- **4-level mastery tracking** — Unknown → Learning → Familiar → Mastered
-- **Weighted progress bars** — per deck and overall, with points score
-- **Practice filters** — filter by mastery level and category (multi-select)
-- **Kana subcategory filter** — drill into specific rows (a, ka, sa … / dakuten / combo)
-- **Flip cards** with direction toggle (JP → EN or EN → JP)
-- **Typed answer check** — for kana, kanji, and vocabulary
-- **Keyboard shortcuts** — `Space` flip · `← →` navigate · `1–4` set mastery · `Esc` exit textbox
-- **Practice calendar** — GitHub-style heatmap of the last 6 months
-- **Session summary** — cards viewed and level changes per session
-- **Select mode** in deck view — bulk-mark multiple cards to a mastery level
-- **4 color themes** — Ai & Shu (default), Indigo, Calm/Focus, Playful — each with light/dark toggle
-- **Export / Import** progress as JSON
-- **Save to directory** — Chrome/Edge: auto-save progress to a chosen folder
-- Works from `file://` — no server needed
+**Decks & content**
+- **5 decks** — Hiragana, Katakana, Kanji, Vocabulary, Grammar — 1,029 cards total
+- **Kanji categories** — 9 thematic groups (Days, Numbers, Time, People & Body, etc.)
+- **Vocab categories** — 23 categories (People, Food, Verbs, Adjectives, Greetings, etc.)
+- **Kana subcategory filter** — drill into individual rows (a, ka, sa … / dakuten / combo)
+
+**Practice modes**
+- **MCQ mode** *(default)* — 6 randomly generated options, pick with mouse or `A–F` keys
+- **Type mode** — write your answer in a text box; accepted on `Enter`
+- **Card recycling** — queue loops infinitely after completion; counter shows `n/n ↺`
+- **Flip card** — click or `Space`; always flips automatically when you submit an answer
+- **Direction toggle** — JP → EN or EN → JP per deck
+- **Practice from selection** — select cards in deck view then hit Practice to drill only those
+
+**Filters & settings**
+- **Mastery filter** — multi-select (Unknown / Learning / Familiar / Mastered)
+- **Category filter** — multi-select chips; kana shows grouped row-level subcategories
+- **Shuffle** — randomise card order
+- **▶ Auto Next** — auto-advance to the next card 700 ms after a correct answer
+- All practice settings configurable as defaults in the Settings page
+
+**Progress & tracking**
+- **4-level mastery** — Unknown → Learning → Familiar → Mastered (weighted points)
+- **Progress bars** — per deck and overall, showing pts / total and percentage
+- **Practice calendar** — GitHub-style heatmap of the last 6 months; hover a day to see pts and time
+- **Time tracking** — daily and cumulative time spent, shown on the calendar page
+- **Session summary** — cards viewed, level changes, and time for the current session
+- **Day counter** — shows how many days since you started learning (home + calendar)
+
+**Deck view**
+- **Card grid** grouped by category with inline flip preview
+- **Select mode** — select multiple cards, bulk-mark mastery, or launch a targeted practice session
+
+**Themes & appearance**
+- **4 color presets** — Ai & Shu (default), Indigo, Calm/Focus, Playful
+- **Light / dark toggle** — works with every preset
+- **Japan flag** SVG in navbar — renders correctly on all browsers and OS
+
+**Data & storage**
+- **Export / Import** progress as `jlpt-n5-progress.json`
+- **Save to directory** *(Chrome/Edge)* — auto-saves to a chosen folder on every change
+- **No server needed** — works from `file://` or any static host
 
 ---
 
@@ -32,8 +59,8 @@ A complete, offline-first flashcard web app for studying everything required for
 |---|---|
 | Hiragana | 104 (basic + dakuten + yōon) |
 | Katakana | 104 (basic + dakuten + yōon) |
-| Kanji | 106 |
-| Vocabulary | 631 |
+| Kanji | 106 (9 categories) |
+| Vocabulary | 631 (23 categories) |
 | Grammar | 84 |
 | **Total** | **1,029** |
 
@@ -59,24 +86,27 @@ Then open `index.html` in your browser. No build step, no dependencies.
 |---|---|
 | `Space` | Flip card |
 | `←` / `→` | Previous / next card |
+| `Enter` *(outside answer box)* | Next card |
 | `1` | Mark as Unknown |
 | `2` | Mark as Learning |
 | `3` | Mark as Familiar |
 | `4` | Mark as Mastered |
-| Any letter | Focus answer box |
+| `A` – `F` | Select MCQ option (in MCQ mode) |
+| Any letter *(outside answer box, Type mode)* | Focus answer box and start typing |
 | `Enter` *(in answer box)* | Submit answer, then releases focus |
-| `Enter` *(outside answer box)* | Next card |
-| `Esc` | Exit answer box |
+| `Esc` | Exit answer box, restore shortcuts |
 
 ---
 
 ## Progress & storage
 
-Progress is stored in **`localStorage`** — it persists across browser restarts but is tied to the browser and device. To back up or transfer progress:
+Progress is stored in **`localStorage`** — persists across browser restarts but is tied to the browser and device. To back up or transfer progress:
 
 - **Export** — downloads `jlpt-n5-progress.json`
 - **Import** — restores from a previously exported file (replaces current progress)
 - **Save to directory** *(Chrome/Edge only)* — picks a folder and auto-saves on every change
+
+The export file includes mastery state, daily history, time log, and UI preferences.
 
 ---
 

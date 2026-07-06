@@ -55,10 +55,25 @@ Pages.settings = function(){
     '<div class="settings-section">'+
       '<h2>Practice Defaults</h2>'+
       '<div class="setting-row">'+
-        '<div><div class="setting-label">Shuffle</div><div class="setting-desc">Randomize card order</div></div>'+
+        '<div><div class="setting-label">Shuffle</div><div class="setting-desc">Randomize card order each session</div></div>'+
         '<div class="setting-control">'+
           '<button class="toggle-btn'+(prefs.shuffle?' on':'')+'" id="shuffle-toggle">'+
             (prefs.shuffle?'On':'Off')+
+          '</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="setting-row">'+
+        '<div><div class="setting-label">Answer mode</div><div class="setting-desc">MCQ shows 6 options to pick from; Type uses a text input</div></div>'+
+        '<div class="setting-control">'+
+          '<button class="toggle-btn'+(prefs.quizMode!=='text'?' on':'')+'" data-quiz="mcq">⊞ MCQ</button>'+
+          '<button class="toggle-btn'+(prefs.quizMode==='text'?' on':'')+'" data-quiz="text">✎ Type</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="setting-row">'+
+        '<div><div class="setting-label">▶ Auto Next</div><div class="setting-desc">Auto-advance to the next card after a correct answer</div></div>'+
+        '<div class="setting-control">'+
+          '<button class="toggle-btn'+(prefs.autoNext?' on':'')+'" id="autonext-setting">'+
+            (prefs.autoNext?'On':'Off')+
           '</button>'+
         '</div>'+
       '</div>'+
@@ -145,6 +160,26 @@ Pages.settings = function(){
     Store.setPref('shuffle', prefs.shuffle);
     shBtn.classList.toggle('on', prefs.shuffle);
     shBtn.textContent = prefs.shuffle ? 'On' : 'Off';
+  });
+
+  // Answer mode (quiz mode)
+  document.querySelectorAll('[data-quiz]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      prefs.quizMode = btn.dataset.quiz;
+      Store.setPref('quizMode', prefs.quizMode);
+      document.querySelectorAll('[data-quiz]').forEach(function(b){
+        b.classList.toggle('on', b.dataset.quiz === prefs.quizMode);
+      });
+    });
+  });
+
+  // Auto Next toggle
+  var anBtn = document.getElementById('autonext-setting');
+  if(anBtn) anBtn.addEventListener('click', function(){
+    prefs.autoNext = !prefs.autoNext;
+    Store.setPref('autoNext', prefs.autoNext);
+    anBtn.classList.toggle('on', prefs.autoNext);
+    anBtn.textContent = prefs.autoNext ? 'On' : 'Off';
   });
 
   // Deck direction toggles
