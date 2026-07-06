@@ -550,8 +550,6 @@ Pages.practice = function(params){
           res.className = 'answer-result '+(correct?'correct':'wrong');
           res.textContent = correct ? '✓ Correct!' : '✗ Expected: '+key;
         }
-        // Always flip to reveal the answer
-        _flipToBack(card);
         // Auto-advance after 700ms if correct and toggle is on
         if(correct && autoNext) _scheduleAutoNext(card);
       }
@@ -624,10 +622,8 @@ Pages.practice = function(params){
       res.className = 'answer-result '+(isCorrect?'correct':'wrong');
       res.textContent = isCorrect ? '✓ Correct!' : '✗ Correct: '+mcqData.correct;
     }
-    // Always flip to reveal the answer
-    var cur = currentCard();
-    if(cur) _flipToBack(cur);
     // Auto-advance after 700ms if correct and toggle is on
+    var cur = currentCard();
     if(isCorrect && autoNext && cur) _scheduleAutoNext(cur);
   }
 
