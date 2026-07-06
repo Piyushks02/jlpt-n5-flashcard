@@ -76,11 +76,10 @@ Pages.deck = function(params){
     var groupsHtml = grouped.order.map(function(key, gidx){
       var gc  = grouped.groups[key];
       var allSel = gc.length > 0 && gc.every(function(c){ return selectedCards.has(c.id); });
-      var catBtn = selectMode
-        ? '<button class="cat-select-all" data-gidx="'+gidx+'" data-action="'+(allSel?'deselect':'select')+'">'+
-            (allSel ? 'Deselect all' : 'Select all')+
-          '</button>'
-        : '';
+      // Always render button to reserve space; visibility toggled via CSS to avoid layout shift
+      var catBtn = '<button class="cat-select-all'+(selectMode?'':' cat-select-all--hidden')+'" data-gidx="'+gidx+'" data-action="'+(allSel?'deselect':'select')+'">'+
+        (allSel ? 'Deselect all' : 'Select all')+
+      '</button>';
       return '<div class="card-group">'+
         '<div class="card-group-title">'+groupTitle(key)+catBtn+'</div>'+
         '<div class="card-grid">'+gc.map(renderTile).join('')+'</div>'+

@@ -397,6 +397,7 @@ body {
   vertical-align: middle; transition: background .12s;
 }
 .cat-select-all:hover { background: var(--border); color: var(--text); }
+.cat-select-all--hidden { visibility: hidden; pointer-events: none; }
 
 /* Extra bottom padding when action bar is open */
 .select-action-bar.visible ~ * { padding-bottom: 80px; }
