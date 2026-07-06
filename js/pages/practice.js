@@ -548,7 +548,12 @@ Pages.practice = function(params){
         var res = document.getElementById('answer-result');
         if(res){
           res.className = 'answer-result '+(correct?'correct':'wrong');
-          res.textContent = correct ? '✓ Correct!' : '✗ Expected: '+key;
+          if(correct){
+            var isExact = val.trim().toLowerCase() === key.trim().toLowerCase();
+            res.textContent = isExact ? '✓ Correct!' : '✓ Correct!  ·  ' + key;
+          } else {
+            res.textContent = '✗ Expected: '+key;
+          }
         }
         // Auto-advance after 700ms if correct and toggle is on
         if(correct && autoNext) _scheduleAutoNext(card);
@@ -610,11 +615,11 @@ Pages.practice = function(params){
     if(!mcqData || mcqAnswered) return;
     mcqAnswered = true;
     var chosen = mcqData.options[idx];
-    var isCorrect = _checkAnswer(chosen, mcqData.correct);
+    var isCorrect = _mcqMatch(chosen, mcqData.correct);
     document.querySelectorAll('.mcq-btn').forEach(function(btn, i){
       btn.disabled = true;
       var opt = mcqData.options[i];
-      if(_checkAnswer(opt, mcqData.correct)) btn.classList.add('correct');
+      if(_mcqMatch(opt, mcqData.correct)) btn.classList.add('correct');
       else if(i === idx && !isCorrect)       btn.classList.add('wrong');
     });
     var res = document.getElementById('answer-result');
@@ -691,11 +696,34 @@ Pages.practice = function(params){
     if(isFlipped) Store.markViewed(card.id);
   }
 
+  // MCQ: direct match — user clicks the exact string, no need to split on commas
+  function _mcqMatch(a, b){
+    return a.trim().toLowerCase() === b.trim().toLowerCase();
+  }
+
   function _checkAnswer(input, key){
-    function norm(s){ return s.toLowerCase().replace(/[.,;!?''""\s]/g,''); }
-    var alts = key.split(/[,\/;]/).map(function(s){ return norm(s.trim()); });
-    var inp  = norm(input);
-    return alts.some(function(a){ return a===inp; });
+    function norm(s){
+      return s.toLowerCase().replace(/[,\/;.!?''""‐\-\s]+/g,' ').trim();
+    }
+    // "story (of a building)" → "story"  (drop brackets + content)
+    function stripParens(s){
+      return s.replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').trim();
+    }
+    // "little (amount)" → "little amount"  (drop brackets, keep content inline)
+    function flattenParens(s){
+      return s.replace(/\(([^)]*)\)/g,'$1').replace(/\s+/g,' ').trim();
+    }
+    var inp = norm(input);
+    var alts = key.split(/[,\/;]/);
+    if(alts.some(function(a){
+      return norm(a) === inp
+          || norm(stripParens(a)) === inp
+          || norm(flattenParens(a)) === inp;
+    })) return true;
+    if(norm(key) === inp
+    || norm(stripParens(key)) === inp
+    || norm(flattenParens(key)) === inp) return true;
+    return false;
   }
 
   // helpers

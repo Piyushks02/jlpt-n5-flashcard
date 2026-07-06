@@ -134,10 +134,11 @@ var App = (function(){
       var mm = document.createElement('div');
       mm.id = 'mobile-menu';
       mm.className = 'mobile-menu';
-      mm.innerHTML = DECKS.map(function(d){
-        return '<a href="#/deck/'+d.id+'">'+d.icon+' '+d.name+'</a>';
-      }).join('')+
+      mm.innerHTML =
         '<a href="#/">Home</a>'+
+        DECKS.map(function(d){
+          return '<a href="#/deck/'+d.id+'">'+d.icon+' '+d.name+'</a>';
+        }).join('')+
         '<a href="#/calendar">Calendar</a>'+
         '<a href="#/settings">Settings</a>';
       var nb = document.getElementById('navbar');
@@ -147,18 +148,11 @@ var App = (function(){
       var menu = document.getElementById('mobile-menu');
       if(menu) menu.classList.toggle('open');
     });
-    let mobileViewDeck = existing;
-    if(!mobileViewDeck){
-      mobileViewDeck = document.querySelector("#mobile-menu");
-      const deckButtons = mobileViewDeck.querySelectorAll("a");
-      if(deckButtons){
-        deckButtons.forEach((button)=>{
-          button.addEventListener("click", ()=>{
-            mobileViewDeck.classList.toggle('open');
-          })
-        })
-      }
-    }
+    // Close on any navigation — covers both link clicks and JS-triggered Router.navigate()
+    window.addEventListener('hashchange', function(){
+      var menu = document.getElementById('mobile-menu');
+      if(menu) menu.classList.remove('open');
+    });
   }
 
   function wireDecksDropdown(){
