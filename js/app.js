@@ -372,13 +372,24 @@ var App = (function(){
     }
   }
 
+  function _isTrackingPage(){
+    var hash = location.hash.replace(/^#/,'') || '/';
+    return /^\/(deck|practice)\//.test(hash);
+  }
+
   function initTimeTracker(){
-    _startTimer();
-    document.addEventListener('visibilitychange', function(){
-      if(document.hidden) _pauseTimer(); else _startTimer();
-    });
+    // Start or pause based on current page + visibility
+    function syncTimer(){
+      if(_isTrackingPage() && !document.hidden) _startTimer();
+      else _pauseTimer();
+    }
+
+    syncTimer(); // set initial state
+
+    window.addEventListener('hashchange',       syncTimer);
+    document.addEventListener('visibilitychange', syncTimer);
     window.addEventListener('blur',  _pauseTimer);
-    window.addEventListener('focus', _startTimer);
+    window.addEventListener('focus', function(){ if(_isTrackingPage()) _startTimer(); });
     window.addEventListener('beforeunload', _pauseTimer);
   }
 
