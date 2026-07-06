@@ -5,6 +5,7 @@ var Store = (function(){
     history:  'n5_history',
     session:  'n5_session',
     prefs:    'n5_prefs',
+    timelog:  'n5_timelog',
   };
 
   var POINTS = {unknown:0, learning:0.2, familiar:0.6, mastered:1.0};
@@ -117,6 +118,31 @@ var Store = (function(){
     _history = h;
   }
 
+  // --- time tracking ---
+  var _timelog = null;
+  function getTimelog(){
+    if(!_timelog) _timelog = load(KEYS.timelog) || {};
+    return _timelog;
+  }
+  function addTimeToday(seconds){
+    if(seconds <= 0) return;
+    var day = getLogicalDay();
+    var tl = getTimelog();
+    tl[day] = (tl[day]||0) + seconds;
+    save(KEYS.timelog, tl);
+  }
+  function getDayHours(key){
+    return (getTimelog()[key]||0) / 3600;
+  }
+  function getTodayHours(){
+    return getDayHours(getLogicalDay());
+  }
+  function getTotalHours(){
+    var tl = getTimelog();
+    var secs = Object.keys(tl).reduce(function(s,k){ return s+(tl[k]||0); },0);
+    return secs / 3600;
+  }
+
   // --- progress calculations ---
   function deckProgress(cards){
     if(!cards||!cards.length) return 0;
@@ -152,6 +178,7 @@ var Store = (function(){
       mastery:  getMastery(),
       history:  getHistory(),
       prefs:    getPrefs(),
+      timelog:  getTimelog(),
     };
   }
   function importData(obj){
@@ -159,9 +186,11 @@ var Store = (function(){
     _mastery = obj.mastery || {};
     _history = obj.history || {};
     _prefs   = Object.assign({}, _defaultPrefs, obj.prefs||{});
+    _timelog = obj.timelog || {};
     save(KEYS.mastery, _mastery);
     save(KEYS.history, _history);
     save(KEYS.prefs,   _prefs);
+    save(KEYS.timelog, _timelog);
     _unsaved = false;
     _session = null; // let it re-init from today
     _emitChange();
@@ -185,6 +214,10 @@ var Store = (function(){
     resetSession: resetSession,
     markActiveDay: markActiveDay,
     getHistory: getHistory,
+    addTimeToday: addTimeToday,
+    getDayHours:  getDayHours,
+    getTodayHours: getTodayHours,
+    getTotalHours: getTotalHours,
     deckProgress:    deckProgress,
     overallProgress: overallProgress,
     deckCounts:      deckCounts,

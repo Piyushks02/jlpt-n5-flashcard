@@ -6,6 +6,12 @@ Pages.practice = function(params){
   var prefs   = Store.getPrefs();
   var deckDir = (prefs.directions||{})[deck.id] || 'normal';
 
+  // Consume pre-selected card IDs from deck select mode (one-shot)
+  var _selectionIds = (window._practiceSelection && window._practiceSelection.length > 0)
+    ? window._practiceSelection.slice() : null;
+  window._practiceSelection = null;
+  var selectionMode = !!_selectionIds; // when true, filters are locked to the selection
+
   // ===== State =====
   var direction  = deckDir;
   var shuffle    = !!prefs.shuffle;
@@ -22,6 +28,11 @@ Pages.practice = function(params){
   var passCount    = 0;        // cards seen so far in the current pass
   var isFlipped    = false;
   var pendingLevel = null;
+  var quizMode     = prefs.quizMode || 'mcq'; // 'mcq' | 'text'
+  var autoNext     = !!prefs.autoNext;         // auto-advance on correct answer
+  var mcqData      = null;  // {options:[], correct:''}  computed per card
+  var mcqAnswered  = false; // true once user has picked an MCQ option
+  var _autoNextTimer = null; // pending auto-advance timeout
 
   // ===== Build queue =====
   function _getCategories(deck){
@@ -67,15 +78,20 @@ Pages.practice = function(params){
   }
 
   function buildQueue(){
-    var cards = deck.cards.filter(function(c){
-      var lv = Store.getLevel(c.id);
-      if(!masteryAllMode && masteryFilter.indexOf(lv) < 0) return false;
-      if(!catAllMode){
-        var cat = _getCardCat(deck, c);
-        return catFilter.indexOf(cat) >= 0;
-      }
-      return true;
-    });
+    var cards;
+    if(selectionMode){
+      cards = deck.cards.filter(function(c){ return _selectionIds.indexOf(c.id) >= 0; });
+    } else {
+      cards = deck.cards.filter(function(c){
+        var lv = Store.getLevel(c.id);
+        if(!masteryAllMode && masteryFilter.indexOf(lv) < 0) return false;
+        if(!catAllMode){
+          var cat = _getCardCat(deck, c);
+          return catFilter.indexOf(cat) >= 0;
+        }
+        return true;
+      });
+    }
     queue       = cards;
     recyclePool = shuffle ? _shuffled(cards) : cards.slice();
     shownHistory = [];
@@ -137,6 +153,32 @@ Pages.practice = function(params){
     return null;
   }
 
+  // Answer key for any card (used to generate MCQ distractors)
+  function _getCardAnswer(c){
+    if(direction==='reverse') return null;
+    if(deck.type==='kana')    return c.romaji;
+    if(deck.type==='kanji')   return c.meaning;
+    if(deck.type==='vocab')   return c.en;
+    return null;
+  }
+
+  function _getMCQData(card){
+    var correct = _getCardAnswer(card);
+    if(!correct) return null;
+    var distractors = [];
+    deck.cards.forEach(function(c){
+      if(c.id === card.id) return;
+      var ans = _getCardAnswer(c);
+      if(!ans || ans === correct) return;
+      // Use only the first alternative to keep options short
+      var first = ans.split(/[,\/;]/)[0].trim();
+      if(first && first !== correct && distractors.indexOf(first) < 0) distractors.push(first);
+    });
+    var picked = _shuffled(distractors).slice(0, 5);
+    var options = _shuffled([correct].concat(picked));
+    return {options: options, correct: correct};
+  }
+
   // ===== Render =====
   function render(){
     App.setFocusMode(true);
@@ -148,6 +190,7 @@ Pages.practice = function(params){
     });
 
     var card = currentCard();
+    mcqData = (quizMode==='mcq' && card) ? _getMCQData(card) : null;
     var mainHTML = _buildUI(card);
     App.setContent(mainHTML);
     _wireUI(card);
@@ -203,14 +246,42 @@ Pages.practice = function(params){
       var back  = getBack(card);
       var ansKey = getAnswerKey(card);
       var ansDisabled = ansKey === null;
-      var ansPlaceholder = ansDisabled
-        ? (direction==='reverse' ? 'Switch to JP → EN to check answers' : 'No answer check for grammar')
-        : 'Type answer…';
-      var ansBox = '<div class="answer-check'+(ansDisabled?' answer-check-disabled':'')+'">' +
-        '<input type="text" id="answer-input" placeholder="'+ansPlaceholder+'" autocomplete="off"'+(ansDisabled?' disabled':'')+'>'+
-        '<button class="btn-secondary btn-sm" id="check-btn"'+(ansDisabled?' disabled':'')+'>Check</button>'+
-        '</div>'+
-        '<div class="answer-result" id="answer-result"></div>';
+
+      // Build answer section based on quiz mode
+      var ansSection;
+      if(quizMode==='mcq' && mcqData){
+        var mcqLetters = ['A','B','C','D','E','F'];
+        ansSection =
+          '<div class="practice-divider">Choose answer</div>'+
+          '<div class="mcq-grid">'+
+            mcqData.options.map(function(opt, i){
+              return '<button class="mcq-btn" data-mcq-idx="'+i+'" title="Shortcut: '+mcqLetters[i]+'">'+
+                '<span class="mcq-letter">'+mcqLetters[i]+'</span>'+
+                escHtml(opt)+
+              '</button>';
+            }).join('')+
+          '</div>'+
+          '<div class="answer-result" id="answer-result"></div>';
+      } else if(quizMode==='mcq' && !mcqData){
+        // MCQ disabled for this deck/direction (grammar or reverse)
+        var disMsg = direction==='reverse' ? 'Switch to JP → EN for MCQ' : 'No MCQ for grammar';
+        ansSection = '<div class="practice-divider">Choose answer</div>'+
+          '<div class="answer-check answer-check-disabled">'+
+            '<input type="text" disabled placeholder="'+disMsg+'">'+
+            '<button class="btn-secondary btn-sm" disabled>Check</button>'+
+          '</div>';
+      } else {
+        // Text mode
+        var ansPlaceholder = ansDisabled
+          ? (direction==='reverse' ? 'Switch to JP → EN to check answers' : 'No answer check for grammar')
+          : 'Type answer…';
+        ansSection =
+          '<div class="answer-check'+(ansDisabled?' answer-check-disabled':'')+'">' +
+            '<input type="text" id="answer-input" placeholder="'+ansPlaceholder+'" autocomplete="off"'+(ansDisabled?' disabled':'')+'>'+
+            '<button class="btn-secondary btn-sm" id="check-btn"'+(ansDisabled?' disabled':'')+'>Check</button>'+
+          '</div>'+
+          '<div class="answer-result" id="answer-result"></div>';
+      }
 
       cardBlock =
         '<div class="flip-card-outer">'+
@@ -240,26 +311,55 @@ Pages.practice = function(params){
             '</svg>'+
           '</button>'+
         '</div>'+
-        '<div class="flip-hint">Space to flip · ← → to navigate · 1-4 set level</div>'+
+        '<div class="flip-hint">'+
+          '<kbd>Space</kbd> flip &nbsp;·&nbsp; <kbd>← →</kbd> navigate &nbsp;·&nbsp; <kbd>1-4</kbd> level'+
+          (quizMode==='mcq' && mcqData ? ' &nbsp;·&nbsp; <kbd>A-F</kbd> choose' : '')+
+          (quizMode==='text' && !ansDisabled ? ' &nbsp;·&nbsp; <kbd>a-z</kbd> to type' : '')+
+        '</div>'+
+        ansSection+
+        '<div class="practice-divider">Mark card as</div>'+
         '<div class="mastery-buttons">'+
           ['unknown','learning','familiar','mastered'].map(function(lv,i){
             var active = (pendingLevel||Store.getLevel(card.id))===lv?' active':'';
             return '<button class="mastery-btn '+lv+active+'" data-lv="'+lv+'" title="'+(i+1)+'">'+cap(lv)+'</button>';
           }).join('')+
-        '</div>'+
-        ansBox;
+        '</div>';
     }
 
-    return '<div class="practice-layout">'+
-      '<div class="practice-controls-block">'+
-        '<div class="practice-controls-row">'+
+    var filterRows = selectionMode
+      ? '<div class="practice-controls-row">'+
           '<span class="controls-label">Settings</span>'+
-          '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle">'+
+          '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
+            ' title="Card direction — front side shown first">'+
             (direction==='normal'?'JP → EN':'EN → JP')+
           '</button>'+
-          '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle">'+
-            '⇄ Shuffle'+(shuffle?' ON':'')+
+          '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
+            ' title="Randomise card order">⇄ Shuffle</button>'+
+          '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+            ' title="MCQ: pick from 6 options · Type: write your answer">'+
+            (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
           '</button>'+
+          '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
+            ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
+        '</div>'+
+        '<div class="selection-notice">'+
+          '⚑ Practising <strong>'+_selectionIds.length+'</strong> selected card'+(_selectionIds.length===1?'':'s')+
+          ' — level &amp; category filters are disabled'+
+        '</div>'
+      : '<div class="practice-controls-row">'+
+          '<span class="controls-label">Settings</span>'+
+          '<button class="toggle-btn'+(direction==='reverse'?' on':'')+'" id="dir-toggle"'+
+            ' title="Card direction — front side shown first">'+
+            (direction==='normal'?'JP → EN':'EN → JP')+
+          '</button>'+
+          '<button class="toggle-btn'+(shuffle?' on':'')+'" id="shuffle-toggle"'+
+            ' title="Randomise card order">⇄ Shuffle</button>'+
+          '<button class="toggle-btn'+(quizMode==='mcq'?' on':'')+'" id="quiz-toggle"'+
+            ' title="MCQ: pick from 6 options · Type: write your answer">'+
+            (quizMode==='mcq' ? '⊞ MCQ' : '✎ Type')+
+          '</button>'+
+          '<button class="toggle-btn'+(autoNext?' on':'')+'" id="autonext-toggle"'+
+            ' title="Auto-advance to next card after a correct answer">▶ Auto</button>'+
         '</div>'+
         '<div class="practice-controls-row">'+
           '<span class="controls-label">Filter by level</span>'+
@@ -278,8 +378,10 @@ Pages.practice = function(params){
                 '<span class="controls-label">Filter by category</span>'+
                 catBtns+
               '</div>')
-          : '')+
-      '</div>'+
+          : '');
+
+    return '<div class="practice-layout">'+
+      '<div class="practice-controls-block">'+filterRows+'</div>'+
       cardBlock+
     '</div>';
   }
@@ -390,7 +492,32 @@ Pages.practice = function(params){
       });
     });
 
-    // answer check
+    // auto-next toggle
+    var ant = document.getElementById('autonext-toggle');
+    if(ant) ant.addEventListener('click', function(){
+      autoNext = !autoNext;
+      Store.setPref('autoNext', autoNext);
+      render();
+    });
+
+    // quiz mode toggle
+    var qt = document.getElementById('quiz-toggle');
+    if(qt) qt.addEventListener('click', function(){
+      quizMode = quizMode==='mcq' ? 'text' : 'mcq';
+      mcqAnswered = false;
+      Store.setPref('quizMode', quizMode);
+      render();
+    });
+
+    // MCQ option clicks
+    document.querySelectorAll('.mcq-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(mcqAnswered) return;
+        _pickMCQ(parseInt(btn.dataset.mcqIdx, 10));
+      });
+    });
+
+    // answer check (text mode)
     var inp = document.getElementById('answer-input');
     var chk = document.getElementById('check-btn');
     if(inp && chk){
@@ -406,6 +533,10 @@ Pages.practice = function(params){
           res.className = 'answer-result '+(correct?'correct':'wrong');
           res.textContent = correct ? '✓ Correct!' : '✗ Expected: '+key;
         }
+        // Always flip to reveal the answer
+        _flipToBack(card);
+        // Auto-advance after 700ms if correct and toggle is on
+        if(correct && autoNext) _scheduleAutoNext(card);
       }
       chk.addEventListener('click', doCheck);
       inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); doCheck(); inp.blur(); }});
@@ -431,6 +562,13 @@ Pages.practice = function(params){
       if(e.key==='Enter')      { e.preventDefault(); _go(1,card); return; }
       if(e.key===' ')          { e.preventDefault(); _flip(card); return; }
 
+      // A–F → MCQ option selection
+      if(quizMode==='mcq' && mcqData && !mcqAnswered){
+        var mcqMap = {a:0,b:1,c:2,d:3,e:4,f:5};
+        var mcqIdx = mcqMap[e.key.toLowerCase()];
+        if(mcqIdx !== undefined){ e.preventDefault(); _pickMCQ(mcqIdx); return; }
+      }
+
       // 1–4 → mastery shortcuts (numbers never redirect to textbox)
       if(e.key>='1'&&e.key<='4'){
         var levels=['unknown','learning','familiar','mastered'];
@@ -453,6 +591,46 @@ Pages.practice = function(params){
     _markViewedIfNeeded(card);
   }
 
+  function _pickMCQ(idx){
+    if(!mcqData || mcqAnswered) return;
+    mcqAnswered = true;
+    var chosen = mcqData.options[idx];
+    var isCorrect = _checkAnswer(chosen, mcqData.correct);
+    document.querySelectorAll('.mcq-btn').forEach(function(btn, i){
+      btn.disabled = true;
+      var opt = mcqData.options[i];
+      if(_checkAnswer(opt, mcqData.correct)) btn.classList.add('correct');
+      else if(i === idx && !isCorrect)       btn.classList.add('wrong');
+    });
+    var res = document.getElementById('answer-result');
+    if(res){
+      res.className = 'answer-result '+(isCorrect?'correct':'wrong');
+      res.textContent = isCorrect ? '✓ Correct!' : '✗ Correct: '+mcqData.correct;
+    }
+    // Always flip to reveal the answer
+    var cur = currentCard();
+    if(cur) _flipToBack(cur);
+    // Auto-advance after 700ms if correct and toggle is on
+    if(isCorrect && autoNext && cur) _scheduleAutoNext(cur);
+  }
+
+  function _flipToBack(card){
+    if(!isFlipped){
+      isFlipped = true;
+      var fc = document.getElementById('flip-card');
+      if(fc) fc.classList.add('flipped');
+      Store.markViewed(card.id);
+    }
+  }
+
+  function _scheduleAutoNext(card){
+    if(_autoNextTimer) clearTimeout(_autoNextTimer);
+    _autoNextTimer = setTimeout(function(){
+      _autoNextTimer = null;
+      _go(1, card);
+    }, 700);
+  }
+
   function _flip(card){
     isFlipped = !isFlipped;
     var fc = document.getElementById('flip-card');
@@ -467,8 +645,10 @@ Pages.practice = function(params){
       Store.setLevel(card.id, pendingLevel);
       Store.recordMove(card.id, old, pendingLevel);
     }
+    if(_autoNextTimer){ clearTimeout(_autoNextTimer); _autoNextTimer = null; }
     pendingLevel = null;
     isFlipped = false;
+    mcqAnswered = false;
     document.onkeydown = null;
 
     if(dir === 1){

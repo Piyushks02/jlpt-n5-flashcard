@@ -346,6 +346,30 @@ var App = (function(){
     input.click();
   }
 
+  // ===== Active-time tracker =====
+  var _timerStart = null;
+
+  function _startTimer(){
+    if(!_timerStart) _timerStart = Date.now();
+  }
+  function _pauseTimer(){
+    if(_timerStart){
+      var elapsed = (Date.now() - _timerStart) / 1000;
+      Store.addTimeToday(elapsed);
+      _timerStart = null;
+    }
+  }
+
+  function initTimeTracker(){
+    _startTimer();
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden) _pauseTimer(); else _startTimer();
+    });
+    window.addEventListener('blur',  _pauseTimer);
+    window.addEventListener('focus', _startTimer);
+    window.addEventListener('beforeunload', _pauseTimer);
+  }
+
   // ===== Unsaved-changes guard =====
   function initBeforeUnload(){
     window.addEventListener('beforeunload', function(e){
@@ -373,6 +397,7 @@ var App = (function(){
     });
     renderNavbar();
     initBeforeUnload();
+    initTimeTracker();
     Router.on('/', Pages.home);
     Router.on('/deck/:id', Pages.deck);
     Router.on('/practice/:id', Pages.practice);

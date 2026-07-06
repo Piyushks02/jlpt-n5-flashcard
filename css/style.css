@@ -467,7 +467,13 @@ body {
 .card-face-answer { font-size: 1.5rem; font-weight: 600; }
 .card-face-reading{ font-size: 1rem; color: var(--text2); }
 .card-face-example{ font-size: .82rem; color: var(--text2); font-style: italic; text-align: center; max-width: 360px; }
-.flip-hint { font-size: .75rem; color: var(--text2); text-align: center; margin-bottom: .75rem; }
+.flip-hint { font-size: .75rem; color: var(--text2); text-align: center; margin-bottom: 1rem; }
+.flip-hint kbd {
+  font-family: inherit; font-size: .68rem;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: .05rem .35rem;
+  color: var(--text2); vertical-align: middle;
+}
 
 /* nav buttons */
 .practice-nav { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
@@ -479,6 +485,48 @@ body {
 }
 .practice-nav .nav-btn:hover { background: var(--bg2); }
 .practice-nav .card-counter { color: var(--text2); font-size: .9rem; min-width: 60px; text-align: center; }
+
+/* Practice section divider */
+.practice-divider {
+  width: 100%; max-width: 500px;
+  display: flex; align-items: center; gap: .6rem;
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text2);
+  margin: .9rem 0 .5rem;
+}
+.practice-divider::before,
+.practice-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Verdict below MCQ grid gets extra breathing room */
+.mcq-grid + .answer-result { margin-top: .9rem; }
+/* Textbox in type mode gets top gap from the hint row */
+.answer-check { margin-top: .75rem; }
+
+/* MCQ options grid */
+.mcq-grid {
+  width: 100%; max-width: 500px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: .4rem;
+}
+.mcq-btn {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .55rem .7rem; border-radius: 8px; text-align: left;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-size: .85rem; cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.mcq-btn:hover:not(:disabled) { background: var(--bg2); border-color: var(--accent); }
+.mcq-btn:disabled { cursor: default; }
+.mcq-btn.correct { background: var(--m-mastered); color: var(--m-mastered-t); border-color: var(--m-mastered); }
+.mcq-btn.wrong   { background: #C0392B; color: #fff; border-color: #C0392B; }
+.mcq-letter {
+  font-size: .7rem; font-weight: 700; color: var(--text2);
+  background: var(--bg2); border-radius: 4px;
+  padding: .1rem .3rem; flex-shrink: 0;
+}
+.mcq-btn.correct .mcq-letter,
+.mcq-btn.wrong   .mcq-letter { background: rgba(255,255,255,.2); color: inherit; }
 
 /* Mastery buttons */
 .mastery-buttons { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-top: 1.1rem; margin-bottom: 1.25rem; }
@@ -548,6 +596,11 @@ body {
   display: flex; flex-direction: column; gap: .4rem;
   margin-bottom: .5rem;
 }
+/* On narrow screens: drop the indent so labels start at the left icon edge */
+@media (max-width: 600px) {
+  .practice-controls-block { padding-left: 0; }
+  .controls-label { min-width: 6rem; }
+}
 .practice-controls-row {
   display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
 }
@@ -584,6 +637,18 @@ body {
 }
 .chip:hover { background: var(--border); }
 .chip.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+/* Selection-mode practice notice */
+.selection-notice {
+  font-size: .8rem; color: var(--text2);
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: .4rem .75rem;
+  margin-right: calc(44px + .5rem); /* align right edge with flashcard */
+}
+.selection-notice strong { color: var(--text); }
+@media (max-width: 600px) {
+  .selection-notice { margin-right: 0; } /* full width between the two icons on mobile */
+}
 
 /* Empty state */
 .empty-state { text-align: center; color: var(--text2); padding: 2rem; font-size: .95rem; }

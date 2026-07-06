@@ -179,8 +179,13 @@ Pages.deck = function(params){
 
   // ===== Event wiring =====
   function wireEvents(){
-    // Practice
+    // Practice — pass selected cards if in select mode
     document.getElementById('start-practice').addEventListener('click', function(){
+      if(selectMode && selectedCards.size > 0){
+        window._practiceSelection = Array.from(selectedCards);
+      } else {
+        window._practiceSelection = null;
+      }
       Router.navigate('/practice/'+deck.id);
     });
 

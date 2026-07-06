@@ -76,7 +76,10 @@ Pages.calendar = function(){
         if(!cell) return '<div class="heatmap-cell"></div>';
         var iv = intensity(cell.entry);
         var cls = iv<0 ? 'heatmap-cell' : 'heatmap-cell active-'+iv;
-        var title = cell.key + (cell.entry ? ' · '+((cell.entry.pts||0).toFixed(1))+' pts' : '');
+        var hrs   = Store.getDayHours(cell.key);
+        var title = cell.key +
+          (cell.entry ? ' · '+(cell.entry.pts||0).toFixed(1)+' pts' : '') +
+          (hrs > 0    ? ' · '+fmtHours(hrs) : '');
         return '<div class="'+cls+'" title="'+title+'"></div>';
       }).join('')+
     '</div>';
@@ -147,11 +150,14 @@ Pages.calendar = function(){
     daysSinceStart = Math.floor((now - first) / 86400000) + 1;
   }
 
+  var totalHrs = Store.getTotalHours();
+
   var html = '<div class="page">'+
     '<h1 class="fw-600" style="margin-bottom:1.5rem">Practice Calendar</h1>'+
     (daysSinceStart > 0
       ? '<p class="text-muted text-sm mt-sm" style="margin-bottom:1.5rem">'+
           '📅 Day <strong>'+daysSinceStart+'</strong> since you started learning'+
+          (totalHrs > 0 ? ' &nbsp;·&nbsp; ⏱ <strong title="'+fmtHours(totalHrs)+'">'+totalHrs.toFixed(1)+'</strong> hrs total' : '')+
         '</p>'
       : '')+
     '<div class="calendar-section">'+
@@ -168,6 +174,7 @@ Pages.calendar = function(){
     '<div class="calendar-section">'+
       '<h2>Today\'s session</h2>'+
       '<div class="session-summary">'+
+        '<div class="session-stat"><span>Time today</span><span class="session-stat-val" title="'+fmtHours(Store.getTodayHours())+'">'+Store.getTodayHours().toFixed(1)+' hrs</span></div>'+
         '<div class="session-stat"><span>Cards viewed</span><span class="session-stat-val">'+viewedCount+'</span></div>'+
         '<div class="session-stat"><span>Level changes</span><span class="session-stat-val">'+moves.length+'</span></div>'+
         '<h3 class="mt-sm">Cards viewed</h3>'+
@@ -182,4 +189,11 @@ Pages.calendar = function(){
 
   function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
   function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtHours(hrs){
+    var totalMin = Math.round(hrs * 60);
+    var h = Math.floor(totalMin / 60);
+    var m = totalMin % 60;
+    if(h === 0) return m + 'm';
+    return h + 'h ' + m + 'm';
+  }
 };
